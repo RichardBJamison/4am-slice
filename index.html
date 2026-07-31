@@ -272,48 +272,45 @@ a.landing-no-nav { cursor: default; pointer-events: none; }
 (function () {
   function isLiveNav(a, href) {
     if (!a) return false;
-    if (a.getAttribute('data-allow-nav') === '1') return true;
-    if (a.getAttribute('data-dead-nav') === '1') return false;
-    href = String(href || '').trim();
+    if (a.getAttribute("data-allow-nav") === "1") return true;
+    if (a.getAttribute("data-dead-nav") === "1") return false;
+    href = String(href || "");
     if (/offer\.html/i.test(href)) return true;
-    if (/(^|\/)nexus(\/|$)/i.test(href)) return true;
+    if (/nexus/i.test(href) && href.indexOf("http") !== 0) return true;
     return false;
   }
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('a');
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a");
     if (!a) return;
-    var href = a.getAttribute('href') || '';
-
-    // Dead menu labels — visible only, never navigate
-    if (a.getAttribute('data-dead-nav') === '1' || a.classList.contains('am-menu-dead')) {
+    var href = a.getAttribute("href") || "";
+    if (a.getAttribute("data-dead-nav") === "1" || a.classList.contains("am-menu-dead")) {
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
-
-    // Live: Your Offer + Nexus
     if (isLiveNav(a, href)) {
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      // root-absolute so it always works
-      if (/offer\.html/i.test(href) || a.classList.contains('am-your-offer')) {
-        window.location.href = '/4am-slice/offer.html';
+      if (/offer\.html/i.test(href) || a.classList.contains("am-your-offer") || a.classList.contains("am-m-offer")) {
+        // relative so local + GH pages both work with/without base
+        var offer = a.getAttribute("href");
+        if (!offer || offer === "#" || offer.indexOf("offer") === -1) offer = "offer.html";
+        // prefer absolute path if already set
+        window.location.href = offer.indexOf("http") === 0 || offer.charAt(0) === "/" ? offer : offer;
         return false;
       }
-      if (/nexus/i.test(href) || a.classList.contains('am-nexus-tab')) {
-        window.location.href = '/4am-slice/nexus/';
+      if (/nexus/i.test(href) || a.classList.contains("am-nexus-tab") || a.classList.contains("am-m-nexus")) {
+        var nx = a.getAttribute("href");
+        if (!nx || nx === "#") nx = "nexus/";
+        window.location.href = nx;
         return false;
       }
       window.location.href = a.href;
       return false;
     }
-
-    // In-page anchors OK
-    if (href.charAt(0) === '#' || href === '') return;
-
-    // Everything else stays locked on this demo landing
-    if (/^(mailto:|tel:|javascript:)/i.test(href) || /^https?:/i.test(href) || /\.(html?|php)($|\?)/i.test(href) || href.indexOf('//') === 0) {
+    if (href.charAt(0) === "#" || href === "") return;
+    if (/^(mailto:|tel:|javascript:)/i.test(href) || /^https?:/i.test(href) || /\.(html?|php)($|\?)/i.test(href) || href.indexOf("//") === 0) {
       e.preventDefault();
       e.stopPropagation();
       return false;
@@ -387,6 +384,100 @@ a.landing-no-nav { cursor: default; pointer-events: none; }
 #wide-nav a.am-menu-dead:hover { opacity: 1; }
 </style>
 
+
+<style id="am-mobile-ok">
+/* —— Mobile bar (Flatsome: show-for-medium = mobile/tablet) —— */
+.am-mobile-bar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #1a1f2e;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+@media (max-width: 849px) {
+  .am-mobile-bar { display: block !important; }
+  /* hide empty desktop-only wide-nav on small if theme leaks */
+  #wide-nav.hide-for-medium { display: none !important; }
+  /* logo bar tighten */
+  .header-main { min-height: 48px !important; }
+  .header-main .header-inner { min-height: 48px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+}
+.am-mobile-bar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem 0.65rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.am-mobile-dead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.65rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  pointer-events: none;
+  user-select: none;
+}
+.am-mobile-live {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+.am-mobile-live a {
+  flex: 1 1 40%;
+  text-align: center;
+  text-decoration: none !important;
+  font-weight: 900;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  padding: 0.7rem 0.5rem;
+  border-radius: 999px;
+  line-height: 1.15;
+}
+.am-m-offer {
+  color: #22c55e !important;
+  border: 2px solid #22c55e;
+  background: rgba(34,197,94,0.12);
+}
+.am-m-nexus {
+  color: #04351C !important;
+  background: #3DFF8A !important;
+  box-shadow: 0 0 14px rgba(61,255,138,0.45);
+}
+/* Neon band mobile height */
+@media (max-width: 849px) {
+  #section_685044422,
+  #section_1565851413 {
+    min-height: 70vh !important;
+  }
+  #section_685044422 .section-content,
+  #section_1565851413 .section-content {
+    min-height: 70vh !important;
+  }
+  /* Hours/map stack readable */
+  .col-inner iframe {
+    max-width: 100% !important;
+    min-height: 220px;
+  }
+  /* Prevent horizontal scroll from wide rows */
+  body, .row { max-width: 100vw; }
+  img { max-width: 100%; height: auto; }
+  /* Specialty / promo text */
+  h1, h2, h3 { overflow-wrap: anywhere; }
+  /* Sticky header shouldn't eat half the phone */
+  #header .header-wrapper { max-height: none; }
+}
+/* Lock script: allow mobile bar links */
+</style>
+
 </head>
 
 <body class="home wp-singular page-template page-template-page-blank page-template-page-blank-php page page-id-37 wp-theme-flatsome wp-child-theme-flatsome-child theme-flatsome woocommerce-no-js lightbox nav-dropdown-has-arrow nav-dropdown-has-shadow nav-dropdown-has-border">
@@ -409,7 +500,7 @@ a.landing-no-nav { cursor: default; pointer-events: none; }
           <div class="flex-col show-for-medium flex-left">
             <ul class="mobile-nav nav nav-left ">
               <li class="nav-icon has-icon">
-  <div class="header-button">		<a href="offer.html" data-allow-nav="1" aria-label="Your Offer">
+  <div class="header-button">		<a href="/4am-slice/offer.html" data-allow-nav="1" aria-label="Your Offer">
 
 		  <i class="icon-menu" ></i>
 		  		</a>
@@ -477,6 +568,20 @@ a.landing-no-nav { cursor: default; pointer-events: none; }
 
 <div class="header-bg-container fill"><div class="header-bg-image fill"></div><div class="header-bg-color fill"></div></div>		</div>
 	</header>
+
+<!-- Mobile top bar: full labels, only Offer + Nexus active -->
+<div id="am-mobile-bar" class="am-mobile-bar show-for-medium" role="navigation" aria-label="Mobile menu">
+  <div class="am-mobile-bar-inner">
+    <div class="am-mobile-dead" aria-hidden="true">
+      <span>Order Online</span><span>Our Menu</span><span>About Us</span><span>Contact</span>
+    </div>
+    <div class="am-mobile-live">
+      <a href="/4am-slice/offer.html" class="am-m-offer" data-allow-nav="1">Your Offer</a>
+      <a href="/4am-slice/nexus/" class="am-m-nexus" data-allow-nav="1">Nexus</a>
+    </div>
+  </div>
+</div>
+
 
 	
 	<main id="main" class="">
